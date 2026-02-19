@@ -1,0 +1,288 @@
+"use client";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import '../../styles/dashboard.css';
+import dynamic from 'next/dynamic';
+import 'leaflet/dist/leaflet.css';
+
+// Dynamically import Map component to avoid SSR issues with Leaflet
+const MapWithNoSSR = dynamic(() => import('../../components/Map'), {
+    ssr: false,
+    loading: () => <p>Loading Map...</p>
+});
+
+export default function UserDashboard() {
+    const [loading, setLoading] = useState(true);
+    const [parkings, setParkings] = useState([]); // Master list (always shows on map)
+    const [filteredParkings, setFilteredParkings] = useState([]); // Filtered list (for business cards)
+    const [userLocation, setUserLocation] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedParkingId, setSelectedParkingId] = useState(null);
+    const [mapCenter, setMapCenter] = useState(null);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    useEffect(() => {
+        fetchParkings();
+
+        // Subscribe to real-time updates for parking dots/slots
+        const subscription = supabase
+            .channel('parking_assets_realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'parking_assets' }, () => {
+                fetchParkings();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []);
+
+    const fetchParkings = async () => {
+        const { data, error } = await supabase
+            .from('parking_assets')
+            .select('*')
+            .eq('is_available', true);
+
+        if (error) {
+            console.error(error);
+        } else {
+            setParkings(data || []);
+            setFilteredParkings(data || []);
+        }
+        setLoading(false);
+    };
+
+    const focusOnMap = (parking) => {
+        if (!parking) return;
+        setSelectedParkingId(parking.id);
+        setMapCenter([parking.latitude, parking.longitude]);
+    };
+
+    const highlightParking = (parking) => {
+        if (!parking) return;
+        focusOnMap(parking);
+
+        // Use a small delay to ensure the card is rendered before scrolling
+        setTimeout(() => {
+            const card = document.getElementById(`parking-card-${parking.id}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    };
+
+    const handleSearch = (forcedQuery = null) => {
+        const queryToUse = (forcedQuery !== null ? forcedQuery : searchQuery).trim().toLowerCase();
+        setSuggestions([]); // Clear suggestions on search
+
+        if (!queryToUse) {
+            setFilteredParkings(parkings);
+            setSelectedParkingId(null);
+            return;
+        }
+
+        // Find matches but don't hide others
+        const matches = parkings.filter(p =>
+            (p.address && p.address.toLowerCase().includes(queryToUse)) ||
+            p.name.toLowerCase().includes(queryToUse)
+        );
+
+        // Sort: matches first, then others
+        const sortedWithMatchesFirst = [...parkings].sort((a, b) => {
+            const aMatch = (a.address && a.address.toLowerCase().includes(queryToUse)) || a.name.toLowerCase().includes(queryToUse);
+            const bMatch = (b.address && b.address.toLowerCase().includes(queryToUse)) || b.name.toLowerCase().includes(queryToUse);
+            if (aMatch && !bMatch) return -1;
+            if (!aMatch && bMatch) return 1;
+            return 0;
+        });
+
+        setFilteredParkings(sortedWithMatchesFirst);
+
+        // Focus map on the best match
+        if (matches.length > 0) {
+            const exactMatch = matches.find(p =>
+                p.address?.toLowerCase() === queryToUse ||
+                p.name.toLowerCase() === queryToUse
+            );
+            focusOnMap(exactMatch || matches[0]);
+        }
+    };
+
+    const handleSearchInputChange = (e) => {
+        const val = e.target.value;
+        setSearchQuery(val);
+        updateSuggestions(val);
+    };
+
+    const updateSuggestions = (val) => {
+        // Suggest unique ADDRESSES
+        let matches = parkings
+            .filter(p => p.address)
+            .map(p => p.address)
+            .filter((v, i, a) => a.indexOf(v) === i); // Unique only
+
+        if (val.trim().length > 0) {
+            matches = matches.filter(addr => addr.toLowerCase().includes(val.toLowerCase()));
+        }
+
+        setSuggestions(matches.slice(0, 5));
+    };
+
+    const deg2rad = (deg) => {
+        return deg * (Math.PI / 180);
+    };
+
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371; // Radius of the earth in km
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c; // Distance in km
+        return d;
+    };
+
+    const handleFindNearby = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        setLoading(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({ lat: latitude, lng: longitude });
+
+                // Calculate distance for all parkings
+                const sorted = parkings.map(p => {
+                    const dist = calculateDistance(latitude, longitude, p.latitude, p.longitude);
+                    return { ...p, distance: dist };
+                }).sort((a, b) => a.distance - b.distance);
+
+                // Focus map on the nearest one
+                if (sorted.length > 0) {
+                    const nearest = sorted[0];
+                    focusOnMap(nearest);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                setFilteredParkings(sorted);
+                setLoading(false);
+            },
+            (err) => {
+                console.error("Geolocation Error:", err);
+                alert("Unable to retrieve your location. Please allow location access.");
+                setLoading(false);
+            }
+        );
+    };
+
+    return (
+        <div className="container dashboard-container">
+
+            <div className="search-area">
+                <input
+                    type="text"
+                    id="searchInput"
+                    className="form-control"
+                    placeholder="Search by area or location..."
+                    style={{ flex: 1 }}
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    onFocus={() => {
+                        updateSuggestions(searchQuery);
+                        setShowSuggestions(true);
+                    }}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    autoComplete="off"
+                />
+
+                {showSuggestions && suggestions.length > 0 && (
+                    <div className="suggestions-list" onMouseLeave={() => setShowSuggestions(false)}>
+                        {suggestions.map((s, idx) => (
+                            <div
+                                key={idx}
+                                className="suggestion-item"
+                                onClick={() => {
+                                    setSearchQuery(s);
+                                    handleSearch(s);
+                                    setShowSuggestions(false);
+                                }}
+                            >
+                                📍 {s}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <button className="btn btn-primary" onClick={() => handleSearch()}>Search</button>
+                <button onClick={handleFindNearby} className="btn" style={{ background: '#333', color: '#fff' }}>
+                    📍 Find Nearby
+                </button>
+            </div>
+
+            <div id="map">
+                <MapWithNoSSR
+                    parkings={parkings}
+                    userLocation={userLocation}
+                    selectedId={selectedParkingId}
+                    center={mapCenter}
+                />
+            </div>
+
+            <h2>Available Parking Lots</h2>
+            <div className="parking-grid">
+                {loading ? (
+                    <p>Loading...</p>
+                ) : filteredParkings.length === 0 ? (
+                    <p>No parking lots found in this area.</p>
+                ) : (
+                    filteredParkings.map(parking => (
+                        <div
+                            key={parking.id}
+                            id={`parking-card-${parking.id}`}
+                            className={`parking-card ${selectedParkingId === parking.id ? 'selected' : ''}`}
+                            onClick={() => highlightParking(parking)}
+                            style={{
+                                cursor: 'pointer',
+                                border: selectedParkingId === parking.id ? '2px solid var(--primary-color)' : '1px solid #f0f0f0',
+                                transform: selectedParkingId === parking.id ? 'scale(1.02)' : 'none',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <div className="grid-header">
+                                <h3>{parking.name}</h3>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                    {parking.distance && (
+                                        <span className="distance-badge">
+                                            {parking.distance > 1 ? `${parking.distance.toFixed(1)} km` : `${(parking.distance * 1000).toFixed(0)} m`}
+                                        </span>
+                                    )}
+                                    {parking.distance && parking.id === filteredParkings[0]?.id && (
+                                        <span className="nearest-badge">Nearest</span>
+                                    )}
+                                </div>
+                            </div>
+                            <p className="price-tag">
+                                NRS {parking.price_per_hour} <span style={{ fontSize: '0.8rem', color: '#666' }}>/hr</span>
+                            </p>
+                            <p style={{ margin: '15px 0', color: '#444', fontSize: '0.95rem' }}>
+                                🚗 Available: <strong>{parking.available_slots_car}</strong> / {parking.total_slots_car} <br />
+                                🏍️ Available: <strong>{parking.available_slots_bike}</strong> / {parking.total_slots_bike}
+                            </p>
+                            <p style={{ color: '#666', fontSize: '0.9rem', display: 'flex', alignItems: 'flex-start', gap: '5px' }}>
+                                <span>📍</span>
+                                <span>{parking.address || `Lat: ${parking.latitude?.toFixed(4)}, Lng: ${parking.longitude?.toFixed(4)}`}</span>
+                            </p>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}
