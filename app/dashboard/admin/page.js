@@ -147,19 +147,19 @@ export default function AdminDashboard() {
                                 <tbody>
                                     {businesses.map(biz => (
                                         <tr key={biz.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Business" style={{ padding: '12px' }}>
                                                 <strong>{biz.business_name}</strong>
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Owner" style={{ padding: '12px' }}>
                                                 {biz.profiles?.full_name || 'N/A'}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Email" style={{ padding: '12px' }}>
                                                 {biz.profiles?.email}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="License" style={{ padding: '12px' }}>
                                                 {biz.license_id}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Proof" style={{ padding: '12px' }}>
                                                 {biz.proof_doc_url ? (
                                                     <a
                                                         href={biz.proof_doc_url}
@@ -193,10 +193,10 @@ export default function AdminDashboard() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Status" style={{ padding: '12px' }}>
                                                 {getStatusBadge(biz.profiles.status)}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td data-label="Action" style={{ padding: '12px' }}>
                                                 {biz.profiles.status === 'pending' && (
                                                     <div style={{ display: 'flex', gap: '5px' }}>
                                                         <button

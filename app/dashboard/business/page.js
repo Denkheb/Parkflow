@@ -245,11 +245,11 @@ export default function BusinessDashboard() {
                                             const duration = ((new Date() - new Date(v.entry_time)) / (1000 * 60 * 60)).toFixed(1);
                                             return (
                                                 <tr key={v.id}>
-                                                    <td>{v.vehicle_number}</td>
-                                                    <td style={{ textTransform: 'capitalize' }}>{v.vehicle_type}</td>
-                                                    <td>{new Date(v.entry_time).toLocaleTimeString()}</td>
-                                                    <td>{duration}h</td>
-                                                    <td>
+                                                    <td data-label="Plate No.">{v.vehicle_number}</td>
+                                                    <td data-label="Type" style={{ textTransform: 'capitalize' }}>{v.vehicle_type}</td>
+                                                    <td data-label="Entry Time">{new Date(v.entry_time).toLocaleTimeString()}</td>
+                                                    <td data-label="Duration">{duration}h</td>
+                                                    <td data-label="Action">
                                                         <button
                                                             onClick={() => handleExit(v)}
                                                             className="btn btn-primary action-btn"
@@ -298,7 +298,7 @@ export default function BusinessDashboard() {
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="e.g. John Doe"
+                                    placeholder="e.g. Ram Bahadur"
                                     value={vehicleForm.owner_name}
                                     onChange={(e) => setVehicleForm({ ...vehicleForm, owner_name: e.target.value })}
                                 />
