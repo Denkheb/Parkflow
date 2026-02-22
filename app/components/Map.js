@@ -114,13 +114,19 @@ function SmartMarker({ parking, selectedId }) {
             position={[parking.latitude, parking.longitude]}
         >
             <Popup>
-                <div style={{ minWidth: '150px' }}>
+                <div style={{ minWidth: '180px' }}>
                     <strong style={{ fontSize: '1.1rem' }}>{parking.name}</strong><br />
                     <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>NRS {parking.price_per_hour}/hr</span><br />
-                    <div style={{ marginTop: '5px', fontSize: '0.85rem', color: '#555' }}>
-                        Car Available: {parking.available_slots_car}<br />
-                        Bike Available: {parking.available_slots_bike}
+                    <div style={{ marginTop: '8px', fontSize: '0.9rem', color: '#444' }}>
+                        Car Slots: <strong>{parking.available_slots_car}</strong> / {parking.total_slots_car}<br />
+                        Bike Slots: <strong>{parking.available_slots_bike}</strong> / {parking.total_slots_bike}
                     </div>
+                    {parking.address && (
+                        <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '5px' }}>
+                            <i className="fa-solid fa-location-dot" style={{ marginRight: '5px' }}></i>
+                            {parking.address}
+                        </p>
+                    )}
                 </div>
             </Popup>
         </Marker>

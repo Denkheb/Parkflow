@@ -288,6 +288,7 @@ export default function UserDashboard() {
                                 Bike Available: <strong>{parking.available_slots_bike}</strong> / {parking.total_slots_bike}
                             </p>
                             <p style={{ color: '#666', fontSize: '0.9rem', display: 'flex', alignItems: 'flex-start', gap: '5px', marginBottom: '15px' }}>
+                                <i className="fa-solid fa-location-dot" style={{ marginTop: '3px', color: 'var(--primary-color)' }}></i>
                                 <span>{parking.address || `Lat: ${parking.latitude?.toFixed(4)}, Lng: ${parking.longitude?.toFixed(4)}`}</span>
                             </p>
 
