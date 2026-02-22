@@ -18,6 +18,15 @@ const redIcon = typeof window !== 'undefined' ? L.icon({
     shadowSize: [41, 41]
 }) : null;
 
+const greenIcon = typeof window !== 'undefined' ? L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+}) : null;
+
 function MapController({ center, zoom }) {
     const map = useMap();
     useEffect(() => {
@@ -147,7 +156,7 @@ export default function Map({ parkings = [], selectedId = null, center = null, u
             <MapController center={center} zoom={16} />
 
             {userLocation && (
-                <Marker position={[userLocation.lat, userLocation.lng]}>
+                <Marker position={[userLocation.lat, userLocation.lng]} icon={greenIcon}>
                     <Popup>You are here</Popup>
                 </Marker>
             )}
