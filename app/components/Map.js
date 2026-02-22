@@ -112,6 +112,7 @@ function SmartMarker({ parking, selectedId }) {
         <Marker
             ref={markerRef}
             position={[parking.latitude, parking.longitude]}
+            icon={redIcon}
         >
             <Popup>
                 <div style={{ minWidth: '180px' }}>
@@ -146,7 +147,7 @@ export default function Map({ parkings = [], selectedId = null, center = null, u
             <MapController center={center} zoom={16} />
 
             {userLocation && (
-                <Marker position={[userLocation.lat, userLocation.lng]} icon={redIcon}>
+                <Marker position={[userLocation.lat, userLocation.lng]}>
                     <Popup>You are here</Popup>
                 </Marker>
             )}
