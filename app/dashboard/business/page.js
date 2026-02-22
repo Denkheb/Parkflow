@@ -14,9 +14,7 @@ export default function BusinessDashboard() {
     const [settings, setSettings] = useState({
         price_per_hour: 0,
         total_slots_car: 0,
-        total_slots_bike: 0,
-        max_duration: 24,
-        fine_amount: 0
+        total_slots_bike: 0
     });
     const [vehicleForm, setVehicleForm] = useState({
         vehicle_number: '',
@@ -54,9 +52,7 @@ export default function BusinessDashboard() {
             setSettings({
                 price_per_hour: businessProfile.price_per_hour,
                 total_slots_car: businessProfile.total_slots_car,
-                total_slots_bike: businessProfile.total_slots_bike,
-                max_duration: businessProfile.max_duration,
-                fine_amount: businessProfile.fine_amount
+                total_slots_bike: businessProfile.total_slots_bike
             });
         }
 
@@ -80,7 +76,7 @@ export default function BusinessDashboard() {
         setLoading(false);
     };
 
-    const calculateCost = (entryTime, exitTime, pricePerHour, maxDuration, fineAmount) => {
+    const calculateCost = (entryTime, exitTime, pricePerHour) => {
         const entry = new Date(entryTime);
         const exit = new Date(exitTime);
 
@@ -89,14 +85,9 @@ export default function BusinessDashboard() {
 
         let cost = Math.ceil(durationHours) * pricePerHour;
 
-        if (durationHours > maxDuration) {
-            cost += fineAmount;
-        }
-
         return {
             duration: durationHours.toFixed(2),
-            cost: cost.toFixed(2),
-            exceeded: durationHours > maxDuration
+            cost: cost.toFixed(2)
         };
     };
 
@@ -157,9 +148,7 @@ export default function BusinessDashboard() {
         const updates = {
             price_per_hour: parseFloat(settings.price_per_hour),
             total_slots_car: parseInt(settings.total_slots_car),
-            total_slots_bike: parseInt(settings.total_slots_bike),
-            max_duration: parseInt(settings.max_duration),
-            fine_amount: parseFloat(settings.fine_amount)
+            total_slots_bike: parseInt(settings.total_slots_bike)
         };
 
         const { error } = await supabase
@@ -349,25 +338,6 @@ export default function BusinessDashboard() {
                                     className="form-control"
                                     value={settings.total_slots_bike}
                                     onChange={(e) => setSettings({ ...settings, total_slots_bike: e.target.value })}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Max Duration (Hours)</label>
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    value={settings.max_duration}
-                                    onChange={(e) => setSettings({ ...settings, max_duration: e.target.value })}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Fine Amount (NRS)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    className="form-control"
-                                    value={settings.fine_amount}
-                                    onChange={(e) => setSettings({ ...settings, fine_amount: e.target.value })}
                                 />
                             </div>
                             <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Update Settings</button>

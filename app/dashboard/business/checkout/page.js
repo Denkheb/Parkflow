@@ -44,9 +44,7 @@ function CheckoutContent() {
             const calc = calculateCost(
                 bookingData.entry_time,
                 new Date().toISOString(),
-                profileData.price_per_hour,
-                profileData.max_duration,
-                profileData.fine_amount
+                profileData.price_per_hour
             );
             setCalculation(calc);
         }
@@ -54,7 +52,7 @@ function CheckoutContent() {
         setLoading(false);
     };
 
-    const calculateCost = (entryTime, exitTime, pricePerHour, maxDuration, fineAmount) => {
+    const calculateCost = (entryTime, exitTime, pricePerHour) => {
         const entry = new Date(entryTime);
         const exit = new Date(exitTime);
 
@@ -63,14 +61,9 @@ function CheckoutContent() {
 
         let cost = Math.ceil(durationHours) * pricePerHour;
 
-        if (durationHours > maxDuration) {
-            cost += fineAmount;
-        }
-
         return {
             duration: durationHours.toFixed(2),
-            cost: cost.toFixed(2),
-            exceeded: durationHours > maxDuration
+            cost: cost.toFixed(2)
         };
     };
 
@@ -196,18 +189,6 @@ function CheckoutContent() {
                         <span>NRS {profile.price_per_hour} / hour</span>
                     </div>
 
-                    {calculation.exceeded && (
-                        <div className="receipt-row" style={{
-                            borderBottom: '1px solid #eee',
-                            padding: '10px 0',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            color: '#dc3545'
-                        }}>
-                            <span>⚠️ Fine (Exceeded {profile.max_duration}h):</span>
-                            <span>NRS {profile.fine_amount}</span>
-                        </div>
-                    )}
 
                     <div className="receipt-total" style={{
                         borderTop: '2px solid #000',
