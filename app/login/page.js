@@ -39,6 +39,13 @@ function LoginContent() {
             return;
         }
 
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+            setError("Configuration Error: The application is missing its Supabase URL. Please check your Vercel Environment Variables.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: formData.email,
