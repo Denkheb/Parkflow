@@ -79,13 +79,13 @@ export default function Register() {
                 const filePath = `proofs/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
-                    .from('business-documents')
+                    .from('documents')
                     .upload(filePath, proofFile);
 
                 if (uploadError) throw uploadError;
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('business-documents')
+                    .from('documents')
                     .getPublicUrl(filePath);
 
                 proofUrl = publicUrl;
