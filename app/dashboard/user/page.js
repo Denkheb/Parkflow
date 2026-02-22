@@ -44,7 +44,12 @@ export default function UserDashboard() {
             .eq('is_available', true);
 
         if (error) {
-            console.error(error);
+            console.error("❌ Error fetching parkings:", {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
         } else {
             setParkings(data || []);
             setFilteredParkings(data || []);

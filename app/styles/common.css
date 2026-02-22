@@ -116,7 +116,7 @@ ul {
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
-    z-index: 2000;
+    z-index: 1100;
 }
 
 .navbar .container {
