@@ -24,9 +24,6 @@ export async function GET(request) {
                                 cookieStore.set(name, value, options)
                             )
                         } catch {
-                            // The `setAll` method was called from a Server Component.
-                            // This can be ignored if you have middleware refreshing
-                            // user sessions.
                         }
                     },
                 },
@@ -38,6 +35,5 @@ export async function GET(request) {
         }
     }
 
-    // return the user to an error page with instructions or just home
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

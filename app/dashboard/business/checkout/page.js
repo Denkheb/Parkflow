@@ -237,7 +237,7 @@ export default function CheckoutPage() {
                                 onChange={(e) => setPaymentMethod(e.target.value)}
                             >
                                 <option value="cash">Cash</option>
-                                <option value="esewa">eSewa (Digital Wallet)</option>
+                                <option value="online">Online Payment</option>
                             </select>
                         </div>
 

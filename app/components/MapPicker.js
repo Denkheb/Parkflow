@@ -20,7 +20,7 @@ function LocationMarker({ onLocationSelect }) {
 }
 
 export default function MapPicker({ onLocationSelect }) {
-    // Center on Kathmandu by default
+
     const defaultCenter = [27.7172, 85.3240];
 
     return (

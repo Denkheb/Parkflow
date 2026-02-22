@@ -21,8 +21,7 @@ export default function BusinessDashboard() {
     const [vehicleForm, setVehicleForm] = useState({
         vehicle_number: '',
         vehicle_type: 'car',
-        owner_name: '',
-        owner_email: ''
+        owner_name: ''
     });
 
     useEffect(() => {
@@ -148,13 +147,12 @@ export default function BusinessDashboard() {
                 vehicle_number: vehicleForm.vehicle_number.toUpperCase(),
                 vehicle_type: vehicleForm.vehicle_type,
                 owner_name: vehicleForm.owner_name || null,
-                owner_email: vehicleForm.owner_email || null,
                 status: 'active',
                 entry_time: new Date().toISOString()
             });
 
         if (!error) {
-            setVehicleForm({ vehicle_number: '', vehicle_type: 'car', owner_name: '', owner_email: '' });
+            setVehicleForm({ vehicle_number: '', vehicle_type: 'car', owner_name: '' });
             await fetchData();
         } else {
             console.error("Entry Error:", error);
@@ -331,16 +329,7 @@ export default function BusinessDashboard() {
                                     onChange={(e) => setVehicleForm({ ...vehicleForm, owner_name: e.target.value })}
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>User Email (Optional)</label>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    placeholder="For notifications/history"
-                                    value={vehicleForm.owner_email}
-                                    onChange={(e) => setVehicleForm({ ...vehicleForm, owner_email: e.target.value })}
-                                />
-                            </div>
+
                             <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Mark Entry</button>
                         </form>
                     </div>

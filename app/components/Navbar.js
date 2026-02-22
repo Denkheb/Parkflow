@@ -16,11 +16,11 @@ export default function Navbar() {
             const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
             if (session) {
-                // Try to get role from metadata first (faster)
+
                 let role = session.user.user_metadata?.role;
 
                 if (!role) {
-                    // Fallback to fetching from profiles table
+
                     const { data } = await supabase
                         .from('profiles')
                         .select('role')
@@ -37,7 +37,7 @@ export default function Navbar() {
                     setDashboardLink('/dashboard/user');
                 }
             } else {
-                // Check for hardcoded admin cookie
+
                 if (typeof document !== 'undefined' && document.cookie.includes('parkflow_admin=')) {
                     setSession({ user: { user_metadata: { role: 'admin' } } });
                     setDashboardLink('/dashboard/admin');
@@ -55,7 +55,7 @@ export default function Navbar() {
     }, [pathname]);
 
     const handleLogout = async () => {
-        // Clear hardcoded admin cookie
+
         if (typeof document !== 'undefined') {
             document.cookie = "parkflow_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
@@ -69,7 +69,7 @@ export default function Navbar() {
     return (
         <nav className="navbar">
             <div className="container">
-                {isDashboard ? ( // Disable link on dashboard
+                {isDashboard ? ( 
                     <span className="logo" style={{ textDecoration: 'none', cursor: 'default' }}>Park<span>flow</span></span>
                 ) : (
                     <Link href="/" className="logo" style={{ textDecoration: 'none' }}>Park<span>flow</span></Link>

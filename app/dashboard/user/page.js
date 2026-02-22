@@ -16,6 +16,7 @@ export default function UserDashboard() {
     const [parkings, setParkings] = useState([]); // Master list (always shows on map)
     const [filteredParkings, setFilteredParkings] = useState([]); // Filtered list (for business cards)
     const [userLocation, setUserLocation] = useState(null);
+    const [routingDestination, setRoutingDestination] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedParkingId, setSelectedParkingId] = useState(null);
     const [mapCenter, setMapCenter] = useState(null);
@@ -57,6 +58,20 @@ export default function UserDashboard() {
         if (!parking) return;
         setSelectedParkingId(parking.id);
         setMapCenter([parking.latitude, parking.longitude]);
+    };
+
+    const handleGetDirections = (parking) => {
+        if (!userLocation) {
+            // If user hasn't allowed location yet, try to get it
+            handleFindNearby(() => {
+                setRoutingDestination({ lat: parking.latitude, lng: parking.longitude });
+                focusOnMap(parking);
+            });
+            return;
+        }
+        setRoutingDestination({ lat: parking.latitude, lng: parking.longitude });
+        focusOnMap(parking);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const highlightParking = (parking) => {
@@ -146,7 +161,7 @@ export default function UserDashboard() {
         return d;
     };
 
-    const handleFindNearby = () => {
+    const handleFindNearby = (callback = null) => {
         if (!navigator.geolocation) {
             alert('Geolocation is not supported by your browser');
             return;
@@ -156,7 +171,8 @@ export default function UserDashboard() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
+                const newLoc = { lat: latitude, lng: longitude };
+                setUserLocation(newLoc);
 
                 // Calculate distance for all parkings
                 const sorted = parkings.map(p => {
@@ -165,14 +181,19 @@ export default function UserDashboard() {
                 }).sort((a, b) => a.distance - b.distance);
 
                 // Focus map on the nearest one
-                if (sorted.length > 0) {
+                if (sorted.length > 0 && !callback) {
                     const nearest = sorted[0];
                     focusOnMap(nearest);
+                    setRoutingDestination({ lat: nearest.latitude, lng: nearest.longitude });
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
 
                 setFilteredParkings(sorted);
                 setLoading(false);
+
+                if (callback && typeof callback === 'function') {
+                    callback(newLoc);
+                }
             },
             (err) => {
                 console.error("Geolocation Error:", err);
@@ -214,15 +235,15 @@ export default function UserDashboard() {
                                     setShowSuggestions(false);
                                 }}
                             >
-                                📍 {s}
+                                {s}
                             </div>
                         ))}
                     </div>
                 )}
 
                 <button className="btn btn-primary" onClick={() => handleSearch()}>Search</button>
-                <button onClick={handleFindNearby} className="btn" style={{ background: '#333', color: '#fff' }}>
-                    📍 Find Nearby
+                <button onClick={() => handleFindNearby()} className="btn" style={{ background: '#333', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fa-solid fa-location-crosshairs"></i> Find Nearby
                 </button>
             </div>
 
@@ -230,6 +251,7 @@ export default function UserDashboard() {
                 <MapWithNoSSR
                     parkings={parkings}
                     userLocation={userLocation}
+                    routingDestination={routingDestination}
                     selectedId={selectedParkingId}
                     center={mapCenter}
                 />
@@ -272,13 +294,23 @@ export default function UserDashboard() {
                                 NRS {parking.price_per_hour} <span style={{ fontSize: '0.8rem', color: '#666' }}>/hr</span>
                             </p>
                             <p style={{ margin: '15px 0', color: '#444', fontSize: '0.95rem' }}>
-                                🚗 Available: <strong>{parking.available_slots_car}</strong> / {parking.total_slots_car} <br />
-                                🏍️ Available: <strong>{parking.available_slots_bike}</strong> / {parking.total_slots_bike}
+                                Car Available: <strong>{parking.available_slots_car}</strong> / {parking.total_slots_car} <br />
+                                Bike Available: <strong>{parking.available_slots_bike}</strong> / {parking.total_slots_bike}
                             </p>
-                            <p style={{ color: '#666', fontSize: '0.9rem', display: 'flex', alignItems: 'flex-start', gap: '5px' }}>
-                                <span>📍</span>
+                            <p style={{ color: '#666', fontSize: '0.9rem', display: 'flex', alignItems: 'flex-start', gap: '5px', marginBottom: '15px' }}>
                                 <span>{parking.address || `Lat: ${parking.latitude?.toFixed(4)}, Lng: ${parking.longitude?.toFixed(4)}`}</span>
                             </p>
+
+                            <button
+                                className="btn btn-primary"
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGetDirections(parking);
+                                }}
+                            >
+                                Get Directions
+                            </button>
                         </div>
                     ))
                 )}

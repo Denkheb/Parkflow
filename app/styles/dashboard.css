@@ -167,3 +167,8 @@
     padding: 5px 10px;
     font-size: 0.9rem;
 }
+
+/* Hide Leaflet Routing Machine instructions panel */
+.leaflet-routing-container {
+    display: none !important;
+}
