@@ -13,6 +13,7 @@ export default function Navbar() {
 
     useEffect(() => {
         const getRoleAndSession = async () => {
+            if (!supabase) return;
             const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
             if (session) {
@@ -47,11 +48,13 @@ export default function Navbar() {
 
         getRoleAndSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            getRoleAndSession();
-        });
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                getRoleAndSession();
+            });
 
-        return () => subscription.unsubscribe();
+            return () => subscription.unsubscribe();
+        }
     }, [pathname]);
 
     const handleLogout = async () => {

@@ -9,6 +9,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!supabase) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
