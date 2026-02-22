@@ -1,11 +1,16 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-export const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-        cookieOptions: {
-            maxAge: 7200,
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+export const supabase = (supabaseUrl && supabaseAnonKey)
+    ? createBrowserClient(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+            cookieOptions: {
+                maxAge: 7200,
+            }
         }
-    }
-)
+    )
+    : null;
