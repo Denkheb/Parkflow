@@ -119,8 +119,8 @@
 }
 
 .stat-card h3 {
-    font-size: 1.25rem;
-    margin-bottom: 2px;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
     color: var(--primary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -129,7 +129,7 @@
 
 .stat-card p {
     color: #666;
-    font-size: 0.75rem;
+    font-size: 1rem;
     white-space: nowrap;
 }
 
@@ -179,15 +179,15 @@
 
 .vehicle-list th,
 .vehicle-list td {
-    padding: 12px 10px;
+    padding: 15px 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .action-btn {
-    padding: 5px 10px;
-    font-size: 0.9rem;
+    padding: 8px 16px;
+    font-size: 0.95rem;
 }
 
 /* Hide Leaflet Routing Machine instructions panel */

@@ -32,7 +32,7 @@ export default function AdminNav() {
                         color: isActive('/dashboard/admin') ? 'var(--primary-color)' : '#bbb',
                         textDecoration: 'none',
                         fontWeight: isActive('/dashboard/admin') ? '600' : '400',
-                        fontSize: '0.9rem',
+                        fontSize: '1rem',
                         transition: 'all 0.3s ease'
                     }}>
                         Businesses
@@ -41,7 +41,7 @@ export default function AdminNav() {
                         color: isActive('/dashboard/admin/vehicles') ? 'var(--primary-color)' : '#bbb',
                         textDecoration: 'none',
                         fontWeight: isActive('/dashboard/admin/vehicles') ? '600' : '400',
-                        fontSize: '0.9rem',
+                        fontSize: '1rem',
                         transition: 'all 0.3s ease'
                     }}>
                         Vehicles
