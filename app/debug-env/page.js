@@ -3,30 +3,29 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function DebugEnv() {
-    const [envKeys, setEnvKeys] = useState([]);
+    const [debugInfo, setDebugInfo] = useState({});
 
     useEffect(() => {
-        // Find all keys starting with NEXT_PUBLIC_
-        const keys = Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_'));
-        setEnvKeys(keys);
+        setDebugInfo({
+            'NEXT_PUBLIC_SUPABASE_URL': process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Present' : '❌ Missing',
+            'NEXT_PUBLIC_SUPABASE_ANON_KEY': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Present' : '❌ Missing',
+        });
     }, []);
+
+    const keys = Object.keys(debugInfo);
 
     return (
         <div style={{ padding: '40px', fontFamily: 'sans-serif' }}>
-            <h1>Environment Variable Debugger</h1>
-            <p>This page lists all public environment variables detected by the browser.</p>
+            <h1>Environment Variable Debugger (v2)</h1>
+            <p>This page checks if the specific keys are found in your browser.</p>
 
             <div style={{ background: '#f4f4f4', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
-                <h3>Detected Keys (NEXT_PUBLIC_*):</h3>
-                {envKeys.length === 0 ? (
-                    <p style={{ color: 'red' }}><strong>No NEXT_PUBLIC_ variables found!</strong></p>
-                ) : (
-                    <ul>
-                        {envKeys.map(key => (
-                            <li key={key}><code>{key}</code>: {process.env[key] ? '✅ Value Present' : '❌ Empty Value'}</li>
-                        ))}
-                    </ul>
-                )}
+                <h3>Supabase Keys:</h3>
+                <ul>
+                    {keys.map(key => (
+                        <li key={key}><code>{key}</code>: {debugInfo[key]}</li>
+                    ))}
+                </ul>
             </div>
 
             <div style={{ marginTop: '20px' }}>
