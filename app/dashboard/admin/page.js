@@ -96,33 +96,33 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="grid-header" style={{ marginBottom: '20px' }}>
-                    <h2>Business Management</h2>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <h2>Management</h2>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button
                             onClick={() => setFilter('all')}
                             className={`btn ${filter === 'all' ? 'btn-primary' : ''}`}
-                            style={{ padding: '8px 16px', background: filter === 'all' ? '' : '#eee' }}
+                            style={{ padding: '6px 12px', background: filter === 'all' ? '' : '#eee', fontSize: '0.85rem' }}
                         >
                             All
                         </button>
                         <button
                             onClick={() => setFilter('pending')}
                             className={`btn ${filter === 'pending' ? 'btn-primary' : ''}`}
-                            style={{ padding: '8px 16px', background: filter === 'pending' ? '' : '#eee' }}
+                            style={{ padding: '6px 12px', background: filter === 'pending' ? '' : '#eee', fontSize: '0.85rem' }}
                         >
                             Pending
                         </button>
                         <button
                             onClick={() => setFilter('approved')}
                             className={`btn ${filter === 'approved' ? 'btn-primary' : ''}`}
-                            style={{ padding: '8px 16px', background: filter === 'approved' ? '' : '#eee' }}
+                            style={{ padding: '6px 12px', background: filter === 'approved' ? '' : '#eee', fontSize: '0.85rem' }}
                         >
-                            Approved
+                            Active
                         </button>
                         <button
                             onClick={() => setFilter('rejected')}
                             className={`btn ${filter === 'rejected' ? 'btn-primary' : ''}`}
-                            style={{ padding: '8px 16px', background: filter === 'rejected' ? '' : '#eee' }}
+                            style={{ padding: '6px 12px', background: filter === 'rejected' ? '' : '#eee', fontSize: '0.85rem' }}
                         >
                             Rejected
                         </button>

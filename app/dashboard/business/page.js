@@ -214,7 +214,7 @@ export default function BusinessDashboard() {
                     <div className="panel">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                             <h3 style={{ margin: 0 }}>Active Vehicles</h3>
-                            <div className="search-group" style={{ position: 'relative', width: '250px' }}>
+                            <div className="search-group" style={{ position: 'relative' }}>
                                 <input
                                     type="text"
                                     className="form-control"

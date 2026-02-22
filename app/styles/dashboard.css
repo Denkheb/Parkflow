@@ -1,6 +1,5 @@
-/* Dashboard Maps and Grids */
 .dashboard-container {
-    padding: 40px 0;
+    padding: 30px 15px;
 }
 
 /* User Dashboard */
@@ -109,17 +108,19 @@
 
 .stat-card {
     background: #fff;
-    padding: 15px 10px;
+    padding: 12px 5px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     text-align: center;
     min-width: 0;
-    /* Prevents overflow in flex/grid */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .stat-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
+    font-size: 1.25rem;
+    margin-bottom: 2px;
     color: var(--primary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -128,7 +129,7 @@
 
 .stat-card p {
     color: #666;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 
@@ -191,26 +192,40 @@
 
 /* Mobile specific overrides */
 @media (max-width: 600px) {
+    .dashboard-container {
+        padding: 20px 10px;
+    }
+
     .stats-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 8px 2px;
     }
 
     .stat-card h3 {
-        font-size: 1.1rem;
+        font-size: 0.9rem;
     }
 
     .stat-card p {
-        font-size: 0.7rem;
+        font-size: 0.6rem;
     }
 
     .grid-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .search-group {
+        width: 100% !important;
+        max-width: 100%;
     }
 
     .panel {
-        padding: 15px;
+        padding: 12px;
     }
 }
