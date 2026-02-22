@@ -1,9 +1,11 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet-routing-machine';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import 'leaflet-routing-machine';
+
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 
@@ -16,12 +18,20 @@ const redIcon = typeof window !== 'undefined' ? L.icon({
     shadowSize: [41, 41]
 }) : null;
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+function MapController({ center, zoom }) {
+    const map = useMap();
+    useEffect(() => {
+        if (center) {
+            map.setView(center, zoom || 16, { animate: true });
+        }
+    }, [center, zoom, map]);
+    return null;
+}
 
 function RoutingControl({ userLocation, destination }) {
     const map = useMap();
     const routingControlRef = useRef(null);
-    const isMountedRef = useRef(false);
+    const isMountedRef = useRef(true);
 
     useEffect(() => {
         if (!map) return;
@@ -34,18 +44,24 @@ function RoutingControl({ userLocation, destination }) {
             return map;
         };
 
-        routingControlRef.current = L.Routing.control({
-            waypoints: [
-                L.latLng(userLocation.lat, userLocation.lng),
-                L.latLng(destination.lat, destination.lng)
-            ],
-            routeWhileDragging: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: false,
-            show: false,
-            createMarker: () => null
-        }).addTo(map);
+        try {
+            const control = L.Routing.control({
+                waypoints: [],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: false,
+                showAlternatives: false,
+                lineOptions: {
+                    styles: [{ color: '#3388ff', weight: 6 }]
+                },
+                createMarker: () => null
+            }).addTo(map);
+
+            routingControlRef.current = control;
+        } catch (e) {
+            console.error(e);
+        }
 
         return () => {
             isMountedRef.current = false;
@@ -59,7 +75,8 @@ function RoutingControl({ userLocation, destination }) {
                     if (map) {
                         map.removeControl(controlToRemove);
                     }
-                } catch (e) { }
+                } catch (e) {
+                }
             }
         };
     }, [map]);
@@ -67,73 +84,80 @@ function RoutingControl({ userLocation, destination }) {
     useEffect(() => {
         if (!isMountedRef.current || !routingControlRef.current) return;
         try {
-            routingControlRef.current.setWaypoints([
-                L.latLng(userLocation.lat, userLocation.lng),
-                L.latLng(destination.lat, destination.lng)
-            ]);
-        } catch (e) { }
+            if (userLocation && destination) {
+                routingControlRef.current.setWaypoints([
+                    L.latLng(userLocation.lat, userLocation.lng),
+                    L.latLng(destination.lat, destination.lng)
+                ]);
+            } else {
+                routingControlRef.current.setWaypoints([]);
+            }
+        } catch (e) {
+        }
     }, [userLocation, destination]);
 
     return null;
 }
 
-function MapController({ center, selectedId, parkings }) {
-    const map = useMap();
+function SmartMarker({ parking, selectedId }) {
+    const markerRef = useRef(null);
+
     useEffect(() => {
-        if (center) {
-            map.flyTo(center, 15, { duration: 1.5 });
-            const p = parkings.find(pk => pk.id === selectedId);
-            if (p) {
-                L.popup()
-                    .setLatLng([p.latitude, p.longitude])
-                    .setContent(`<strong>${p.name}</strong><br/>${p.address || ''}`)
-                    .openOn(map);
-            }
+        if (selectedId === parking.id && markerRef.current) {
+            markerRef.current.openPopup();
         }
-    }, [center, selectedId, map]);
-    return null;
+    }, [selectedId, parking.id]);
+
+    return (
+        <Marker
+            ref={markerRef}
+            position={[parking.latitude, parking.longitude]}
+        >
+            <Popup>
+                <div style={{ minWidth: '150px' }}>
+                    <strong style={{ fontSize: '1.1rem' }}>{parking.name}</strong><br />
+                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>NRS {parking.price_per_hour}/hr</span><br />
+                    <div style={{ marginTop: '5px', fontSize: '0.85rem', color: '#555' }}>
+                        Car Available: {parking.available_slots_car}<br />
+                        Bike Available: {parking.available_slots_bike}
+                    </div>
+                </div>
+            </Popup>
+        </Marker>
+    );
 }
 
-export default function Map({ parkings, userLocation, routingDestination, selectedId, center }) {
+export default function Map({ parkings = [], selectedId = null, center = null, userLocation = null, routingDestination = null }) {
     const defaultCenter = [27.7172, 85.3240];
 
     return (
-        <MapContainer
-            center={defaultCenter}
-            zoom={13}
-            style={{ height: '400px', width: '100%', borderRadius: '12px', border: '1px solid #ddd', zIndex: 1 }}
-        >
+        <MapContainer center={defaultCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 
-            {parkings.map(parking => (
-                <Marker
-                    key={parking.id}
-                    position={[parking.latitude, parking.longitude]}
-                >
-                    <Popup>
-                        <strong>{parking.name}</strong> <br />
-                        Price: NRS {parking.price_per_hour} / hr
-                    </Popup>
-                </Marker>
-            ))}
+            <MapController center={center} zoom={16} />
 
             {userLocation && (
                 <Marker position={[userLocation.lat, userLocation.lng]} icon={redIcon}>
-                    <Popup>Your Location</Popup>
+                    <Popup>You are here</Popup>
                 </Marker>
             )}
 
-            {userLocation && routingDestination && (
-                <RoutingControl
-                    userLocation={userLocation}
-                    destination={routingDestination}
-                />
+            {userLocation && (
+                <RoutingControl userLocation={userLocation} destination={routingDestination} />
             )}
 
-            <MapController center={center} selectedId={selectedId} parkings={parkings} />
+            {parkings.map(parking => (
+                parking.latitude && parking.longitude && (
+                    <SmartMarker
+                        key={parking.id}
+                        parking={parking}
+                        selectedId={selectedId}
+                    />
+                )
+            ))}
         </MapContainer>
     );
 }

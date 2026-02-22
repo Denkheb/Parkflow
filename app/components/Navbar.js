@@ -16,9 +16,11 @@ export default function Navbar() {
             const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
             if (session) {
+
                 let role = session.user.user_metadata?.role;
 
                 if (!role) {
+
                     const { data } = await supabase
                         .from('profiles')
                         .select('role')
@@ -35,6 +37,7 @@ export default function Navbar() {
                     setDashboardLink('/dashboard/user');
                 }
             } else {
+
                 if (typeof document !== 'undefined' && document.cookie.includes('parkflow_admin=')) {
                     setSession({ user: { user_metadata: { role: 'admin' } } });
                     setDashboardLink('/dashboard/admin');
@@ -52,6 +55,7 @@ export default function Navbar() {
     }, [pathname]);
 
     const handleLogout = async () => {
+
         if (typeof document !== 'undefined') {
             document.cookie = "parkflow_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
@@ -60,6 +64,7 @@ export default function Navbar() {
         router.refresh();
         router.push('/login');
     };
+
 
     return (
         <nav className="navbar">

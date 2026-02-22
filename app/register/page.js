@@ -3,27 +3,31 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
-import '../styles/auth.css';
 import dynamic from 'next/dynamic';
+import '../styles/auth.css';
 
 const MapPicker = dynamic(() => import('../components/MapPicker'), {
     ssr: false,
-    loading: () => <p>Loading Map...</p>
+    loading: () => <p>Loading Map Picker...</p>
 });
 
 export default function Register() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('user');
-    const [formData, setFormData] = useState({
-        name: '', email: '', password: '',
-        business_name: '', license_id: '',
-        address: '',
-        latitude: null, longitude: null
-    });
-    const [proofFile, setProofFile] = useState(null);
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState(null);
+    const [proofFile, setProofFile] = useState(null);
+
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        fullName: '',
+        businessName: '',
+        licenseId: '',
+        latitude: null,
+        longitude: null,
+        address: ''
+    });
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,12 +43,11 @@ export default function Register() {
                 const addressParts = data.display_name.split(', ');
                 const area = addressParts[0] || '';
                 const city = addressParts[1] || '';
-                const shortened = area + (city ? `, ${city}` : '');
-
-                setFormData(prev => ({ ...prev, address: shortened }));
+                const shortAddr = area + (city ? ', ' + city : '');
+                setFormData(prev => ({ ...prev, address: shortAddr }));
             }
         } catch (err) {
-            console.error("Geocoding failed:", err);
+            console.error(err);
         }
     };
 
@@ -54,7 +57,7 @@ export default function Register() {
         }
     };
 
-    const handleRegister = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
@@ -72,19 +75,19 @@ export default function Register() {
                 }
 
                 const fileExt = proofFile.name.split('.').pop();
-                const fileName = `proof_${Date.now()}.${fileExt}`;
-                const { error: uploadError } = await supabase.storage
-                    .from('documents')
-                    .upload(fileName, proofFile);
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `proofs/${fileName}`;
 
-                if (uploadError) {
-                    console.error("Upload Error:", uploadError);
-                    throw new Error("Failed to upload proof document: " + uploadError.message);
-                }
+                const { error: uploadError } = await supabase.storage
+                    .from('business-documents')
+                    .upload(filePath, proofFile);
+
+                if (uploadError) throw uploadError;
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('documents')
-                    .getPublicUrl(fileName);
+                    .from('business-documents')
+                    .getPublicUrl(filePath);
+
                 proofUrl = publicUrl;
             }
 
@@ -93,14 +96,15 @@ export default function Register() {
                 password: formData.password,
                 options: {
                     data: {
-                        full_name: formData.name,
+                        full_name: formData.fullName,
                         role: activeTab,
-                        business_name: formData.business_name,
-                        license_id: formData.license_id,
-                        address: formData.address,
-                        latitude: formData.latitude,
-                        longitude: formData.longitude,
-                        proof_doc_url: proofUrl
+                        business_name: activeTab === 'business' ? formData.businessName : null,
+                        license_id: activeTab === 'business' ? formData.licenseId : null,
+                        latitude: activeTab === 'business' ? formData.latitude : null,
+                        longitude: activeTab === 'business' ? formData.longitude : null,
+                        address: activeTab === 'business' ? formData.address : null,
+                        proof_doc_url: proofUrl,
+                        status: activeTab === 'business' ? 'pending' : 'approved'
                     }
                 }
             });
@@ -125,115 +129,138 @@ export default function Register() {
                     className={`tab ${activeTab === 'user' ? 'active' : ''}`}
                     onClick={() => setActiveTab('user')}
                 >
-                    User
+                    User Account
                 </div>
                 <div
                     className={`tab ${activeTab === 'business' ? 'active' : ''}`}
                     onClick={() => setActiveTab('business')}
                 >
-                    Business
+                    Business Owner
                 </div>
             </div>
 
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <form onSubmit={handleRegister}>
-                <div className="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" className="form-control" required value={formData.name} onChange={handleChange} />
-                </div>
-
-                <div className="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" className="form-control" required value={formData.email} onChange={handleChange} />
-                </div>
-
-                <div className="form-group">
-                    <label>Password</label>
-                    <div style={{ position: 'relative' }}>
+            <form onSubmit={handleSubmit}>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label>Full Name</label>
                         <input
-                            type={showPassword ? "text" : "password"}
+                            type="text"
+                            name="fullName"
+                            className="form-control"
+                            placeholder="Enter your full name"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Email Address</label>
+                        <input
+                            type="email"
+                            name="email"
+                            className="form-control"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input
+                            type="password"
                             name="password"
                             className="form-control"
-                            required
+                            placeholder="Minimum 6 characters"
                             value={formData.password}
                             onChange={handleChange}
+                            required
+                            minLength="6"
                         />
-                        <span
-                            onClick={() => setShowPassword(!showPassword)}
-                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: '#666' }}
-                        >
-                            <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                        </span>
                     </div>
-                </div>
 
-                {activeTab === 'business' && (
-                    <>
-                        <div className="form-group">
-                            <label>Business Name</label>
-                            <input type="text" name="business_name" className="form-control" required value={formData.business_name} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>License ID</label>
-                            <input type="text" name="license_id" className="form-control" required value={formData.license_id} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Business Address (Auto-synced with Map)</label>
-                            <div style={{ position: 'relative' }}>
+                    {activeTab === 'business' && (
+                        <>
+                            <div className="form-group">
+                                <label>Business Name</label>
+                                <input
+                                    type="text"
+                                    name="businessName"
+                                    className="form-control"
+                                    placeholder="e.g. City Center Parking"
+                                    value={formData.businessName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Business License ID</label>
+                                <input
+                                    type="text"
+                                    name="licenseId"
+                                    className="form-control"
+                                    placeholder="License or Registration No."
+                                    value={formData.licenseId}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label>Select Location on Map</label>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <MapPicker onLocationSelect={handleLocationSelect} />
+                                </div>
                                 <input
                                     type="text"
                                     name="address"
                                     className="form-control"
-                                    placeholder="Click map to detect address..."
-                                    required
+                                    placeholder="Calculated area/address"
                                     value={formData.address}
                                     onChange={handleChange}
+                                    required
                                 />
-                                {formData.address && formData.latitude && (
-                                    <span style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        fontSize: '0.7rem',
-                                        color: '#28a745'
-                                    }}>
-                                        <i className="fa-solid fa-circle-check"></i> Verified
-                                    </span>
+                                {formData.latitude && (
+                                    <small style={{ color: 'green' }}>
+                                        Location pinpointed: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
+                                    </small>
                                 )}
                             </div>
-                            <small style={{ color: '#666' }}>You can refine this address after clicking the map.</small>
-                        </div>
-                        <div className="form-group">
-                            <label>Proof Document (Image) <span style={{ color: 'red' }}>*</span></label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="form-control"
-                                required={activeTab === 'business'}
-                            />
-                            <small style={{ color: '#666' }}>Upload your business license or ID for verification.</small>
-                        </div>
-                        <div className="form-group">
-                            <label>Business Location (Click on Map)</label>
-                            <MapPicker onLocationSelect={handleLocationSelect} />
-                            {formData.latitude && <p style={{ fontSize: '0.8rem', color: 'green', marginTop: '5px' }}>Location Selected: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>}
-                        </div>
-                    </>
-                )}
+
+                            <div className="form-group full-width">
+                                <label>Verification Document (License/ID)</label>
+                                <input
+                                    type="file"
+                                    className="form-control"
+                                    onChange={handleFileChange}
+                                    accept="image/*"
+                                    required
+                                />
+                                <small>Please upload a clear photo of your business license or identity document for verification.</small>
+                            </div>
+                        </>
+                    )}
+                </div>
 
                 <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }} disabled={loading}>
-                    {loading ? 'Registering...' : 'Register'}
+                    <i className="fa-solid fa-user-plus"></i> {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
             </form>
+
+            {activeTab === 'user' && (
+                <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                </div>
+            )}
 
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <p className="mt-2 text-center" style={{ fontSize: '0.9rem' }}>Already have an account? <Link href="/login" style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Login</Link></p>
                 <p className="text-center" style={{ marginTop: '10px', fontSize: '0.9rem' }}><Link href="/" style={{ color: '#666' }}>← Back to Home</Link></p>
             </div>
-
         </div>
     );
 }

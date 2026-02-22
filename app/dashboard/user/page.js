@@ -186,7 +186,7 @@ export default function UserDashboard() {
                 }
             },
             (err) => {
-                console.error("Geolocation Error:", err);
+                console.error(err);
                 alert("Unable to retrieve your location. Please allow location access.");
                 setLoading(false);
             }

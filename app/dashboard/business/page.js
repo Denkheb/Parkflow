@@ -145,7 +145,7 @@ export default function BusinessDashboard() {
             setVehicleForm({ vehicle_number: '', vehicle_type: 'car', owner_name: '' });
             await fetchData();
         } else {
-            console.error("Entry Error:", error);
+            console.error(error);
             alert("Entry failed: " + error.message);
         }
     };
@@ -168,7 +168,7 @@ export default function BusinessDashboard() {
             .eq('id', profile.id);
 
         if (error) {
-            console.error("Update Settings Error:", error);
+            console.error(error);
             alert("Update failed: " + error.message);
             return;
         }
@@ -182,7 +182,7 @@ export default function BusinessDashboard() {
             })
             .eq('owner_id', profile.user_id);
 
-        if (syncError) console.error("Sync Error:", syncError);
+        if (syncError) console.error(syncError);
 
         setSettingsSuccess(true);
         setTimeout(() => setSettingsSuccess(false), 3000);

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import '../../../styles/dashboard.css';
@@ -59,19 +59,16 @@ function CheckoutContent() {
         const exit = new Date(exitTime);
 
         const durationMs = exit - entry;
-        const durationMinutes = Math.floor(durationMs / (1000 * 60));
         const durationHours = durationMs / (1000 * 60 * 60);
 
-        const pricePerMinute = pricePerHour / 60;
-        let cost = durationMinutes * pricePerMinute;
+        let cost = Math.ceil(durationHours) * pricePerHour;
 
         if (durationHours > maxDuration) {
             cost += fineAmount;
         }
 
         return {
-            minutes: durationMinutes,
-            hours: durationHours.toFixed(2),
+            duration: durationHours.toFixed(2),
             cost: cost.toFixed(2),
             exceeded: durationHours > maxDuration
         };
@@ -99,8 +96,8 @@ function CheckoutContent() {
     if (loading) return <div className="container">Loading...</div>;
     if (!booking || !calculation) return <div className="container">Booking not found</div>;
 
-    const hours = Math.floor(calculation.minutes / 60);
-    const minutes = calculation.minutes % 60;
+    const entryDate = new Date(booking.entry_time);
+    const exitDate = new Date();
 
     return (
         <>
@@ -158,7 +155,7 @@ function CheckoutContent() {
                         <h2 style={{ margin: '0 0 5px 0', fontSize: '1.2rem' }}>{profile.business_name}</h2>
                         <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Parking Receipt</p>
                         <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#999' }}>
-                            {new Date().toLocaleString()}
+                            {exitDate.toLocaleString()}
                         </p>
                     </div>
 
@@ -181,17 +178,17 @@ function CheckoutContent() {
 
                     <div className="receipt-row" style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between' }}>
                         <span>Entry Time:</span>
-                        <span>{new Date(booking.entry_time).toLocaleString()}</span>
+                        <span>{entryDate.toLocaleString()}</span>
                     </div>
 
                     <div className="receipt-row" style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between' }}>
                         <span>Exit Time:</span>
-                        <span>{new Date().toLocaleString()}</span>
+                        <span>{exitDate.toLocaleString()}</span>
                     </div>
 
                     <div className="receipt-row" style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between' }}>
                         <span>Duration:</span>
-                        <strong>{hours}h {minutes}m</strong>
+                        <strong>{calculation.duration} Hours</strong>
                     </div>
 
                     <div className="receipt-row" style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between' }}>
