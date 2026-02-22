@@ -19,13 +19,20 @@ export default function AdminNav() {
             top: 0,
             zIndex: 1000
         }}>
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ fontSize: '1.2rem', letterSpacing: '1px' }}>ADMIN PANEL</strong>
-                <div style={{ display: 'flex', gap: '25px' }}>
+            <div className="container" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '10px'
+            }}>
+                <strong style={{ fontSize: '1.2rem', letterSpacing: '1px' }}>ADMIN</strong>
+                <div style={{ display: 'flex', gap: '15px' }}>
                     <Link href="/dashboard/admin" style={{
                         color: isActive('/dashboard/admin') ? 'var(--primary-color)' : '#bbb',
                         textDecoration: 'none',
                         fontWeight: isActive('/dashboard/admin') ? '600' : '400',
+                        fontSize: '0.9rem',
                         transition: 'all 0.3s ease'
                     }}>
                         Businesses
@@ -34,9 +41,10 @@ export default function AdminNav() {
                         color: isActive('/dashboard/admin/vehicles') ? 'var(--primary-color)' : '#bbb',
                         textDecoration: 'none',
                         fontWeight: isActive('/dashboard/admin/vehicles') ? '600' : '400',
+                        fontSize: '0.9rem',
                         transition: 'all 0.3s ease'
                     }}>
-                        All Vehicles
+                        Vehicles
                     </Link>
                 </div>
             </div>

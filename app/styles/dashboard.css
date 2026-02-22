@@ -102,27 +102,34 @@
 /* Business Dashboard Stats */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
     margin-bottom: 30px;
 }
 
 .stat-card {
     background: #fff;
-    padding: 20px;
+    padding: 15px 10px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     text-align: center;
+    min-width: 0;
+    /* Prevents overflow in flex/grid */
 }
 
 .stat-card h3 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 5px;
     color: var(--primary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stat-card p {
     color: #666;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
 .main-grid {
@@ -151,16 +158,25 @@
     margin-bottom: 15px;
 }
 
+.vehicle-list {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .vehicle-list table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
+    /* Ensures table doesn't squish too much */
 }
 
 .vehicle-list th,
 .vehicle-list td {
-    padding: 10px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
 }
 
 .action-btn {
@@ -171,4 +187,30 @@
 /* Hide Leaflet Routing Machine instructions panel */
 .leaflet-routing-container {
     display: none !important;
+}
+
+/* Mobile specific overrides */
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .stat-card p {
+        font-size: 0.7rem;
+    }
+
+    .grid-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .panel {
+        padding: 15px;
+    }
 }

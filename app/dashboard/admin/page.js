@@ -83,15 +83,15 @@ export default function AdminDashboard() {
                 <div className="stats-grid" style={{ marginBottom: '30px' }}>
                     <div className="stat-card">
                         <h3>{stats.total}</h3>
-                        <p>Total Businesses</p>
+                        <p>Total Biz</p>
                     </div>
                     <div className="stat-card">
                         <h3 style={{ color: 'var(--primary-color)' }}>{stats.pending}</h3>
-                        <p>Pending Approval</p>
+                        <p>Pending</p>
                     </div>
                     <div className="stat-card">
                         <h3 style={{ color: 'var(--success)' }}>{stats.approved}</h3>
-                        <p>Approved / Active</p>
+                        <p>Active</p>
                     </div>
                 </div>
 

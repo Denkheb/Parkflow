@@ -197,15 +197,15 @@ export default function BusinessDashboard() {
             <div className="stats-grid">
                 <div className="stat-card">
                     <h3>{occupiedCar} / {profile?.total_slots_car || 0}</h3>
-                    <p>Car Slots Occupied</p>
+                    <p>Car Slots</p>
                 </div>
                 <div className="stat-card">
                     <h3>{occupiedBike} / {profile?.total_slots_bike || 0}</h3>
-                    <p>Bike Slots Occupied</p>
+                    <p>Bike Slots</p>
                 </div>
                 <div className="stat-card">
                     <h3>NRS {profile?.price_per_hour || 0}</h3>
-                    <p>Price / Hour</p>
+                    <p>Rate / Hr</p>
                 </div>
             </div>
 
