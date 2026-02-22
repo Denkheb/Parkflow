@@ -12,12 +12,6 @@ export default function Home() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        // Fetch role from profiles or metadata
-        // For now, assuming metadata has role if set during signup, 
-        // or we fetch from public.profiles.
-        // Let's try metadata first as it's faster if standard.
-        // But our SQL schema puts role in public.profiles.
-        // We'll fetch it.
         checkRole(session.user.id);
       }
     });

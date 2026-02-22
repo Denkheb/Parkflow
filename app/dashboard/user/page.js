@@ -5,7 +5,6 @@ import '../../styles/dashboard.css';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 
-// Dynamically import Map component to avoid SSR issues with Leaflet
 const MapWithNoSSR = dynamic(() => import('../../components/Map'), {
     ssr: false,
     loading: () => <p>Loading Map...</p>
@@ -13,8 +12,8 @@ const MapWithNoSSR = dynamic(() => import('../../components/Map'), {
 
 export default function UserDashboard() {
     const [loading, setLoading] = useState(true);
-    const [parkings, setParkings] = useState([]); // Master list (always shows on map)
-    const [filteredParkings, setFilteredParkings] = useState([]); // Filtered list (for business cards)
+    const [parkings, setParkings] = useState([]);
+    const [filteredParkings, setFilteredParkings] = useState([]);
     const [userLocation, setUserLocation] = useState(null);
     const [routingDestination, setRoutingDestination] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +25,6 @@ export default function UserDashboard() {
     useEffect(() => {
         fetchParkings();
 
-        // Subscribe to real-time updates for parking dots/slots
         const subscription = supabase
             .channel('parking_assets_realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'parking_assets' }, () => {
@@ -62,7 +60,6 @@ export default function UserDashboard() {
 
     const handleGetDirections = (parking) => {
         if (!userLocation) {
-            // If user hasn't allowed location yet, try to get it
             handleFindNearby(() => {
                 setRoutingDestination({ lat: parking.latitude, lng: parking.longitude });
                 focusOnMap(parking);
@@ -78,7 +75,6 @@ export default function UserDashboard() {
         if (!parking) return;
         focusOnMap(parking);
 
-        // Use a small delay to ensure the card is rendered before scrolling
         setTimeout(() => {
             const card = document.getElementById(`parking-card-${parking.id}`);
             if (card) {
@@ -89,7 +85,7 @@ export default function UserDashboard() {
 
     const handleSearch = (forcedQuery = null) => {
         const queryToUse = (forcedQuery !== null ? forcedQuery : searchQuery).trim().toLowerCase();
-        setSuggestions([]); // Clear suggestions on search
+        setSuggestions([]);
 
         if (!queryToUse) {
             setFilteredParkings(parkings);
@@ -97,13 +93,11 @@ export default function UserDashboard() {
             return;
         }
 
-        // Find matches but don't hide others
         const matches = parkings.filter(p =>
             (p.address && p.address.toLowerCase().includes(queryToUse)) ||
             p.name.toLowerCase().includes(queryToUse)
         );
 
-        // Sort: matches first, then others
         const sortedWithMatchesFirst = [...parkings].sort((a, b) => {
             const aMatch = (a.address && a.address.toLowerCase().includes(queryToUse)) || a.name.toLowerCase().includes(queryToUse);
             const bMatch = (b.address && b.address.toLowerCase().includes(queryToUse)) || b.name.toLowerCase().includes(queryToUse);
@@ -114,7 +108,6 @@ export default function UserDashboard() {
 
         setFilteredParkings(sortedWithMatchesFirst);
 
-        // Focus map on the best match
         if (matches.length > 0) {
             const exactMatch = matches.find(p =>
                 p.address?.toLowerCase() === queryToUse ||
@@ -131,11 +124,10 @@ export default function UserDashboard() {
     };
 
     const updateSuggestions = (val) => {
-        // Suggest unique ADDRESSES
         let matches = parkings
             .filter(p => p.address)
             .map(p => p.address)
-            .filter((v, i, a) => a.indexOf(v) === i); // Unique only
+            .filter((v, i, a) => a.indexOf(v) === i);
 
         if (val.trim().length > 0) {
             matches = matches.filter(addr => addr.toLowerCase().includes(val.toLowerCase()));
@@ -149,7 +141,7 @@ export default function UserDashboard() {
     };
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371; // Radius of the earth in km
+        const R = 6371;
         const dLat = deg2rad(lat2 - lat1);
         const dLon = deg2rad(lon2 - lon1);
         const a =
@@ -157,7 +149,7 @@ export default function UserDashboard() {
             Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const d = R * c; // Distance in km
+        const d = R * c;
         return d;
     };
 
@@ -174,13 +166,11 @@ export default function UserDashboard() {
                 const newLoc = { lat: latitude, lng: longitude };
                 setUserLocation(newLoc);
 
-                // Calculate distance for all parkings
                 const sorted = parkings.map(p => {
                     const dist = calculateDistance(latitude, longitude, p.latitude, p.longitude);
                     return { ...p, distance: dist };
                 }).sort((a, b) => a.distance - b.distance);
 
-                // Focus map on the nearest one
                 if (sorted.length > 0 && !callback) {
                     const nearest = sorted[0];
                     focusOnMap(nearest);

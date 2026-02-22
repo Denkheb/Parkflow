@@ -1,5 +1,3 @@
-
-
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,12 +32,10 @@ export default function Register() {
     const handleLocationSelect = async (lat, lng) => {
         setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
 
-        // Use Nominatim for reverse geocoding to keep address in sync with map (Force English)
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=en`);
             const data = await res.json();
             if (data && data.display_name) {
-                // Shorten the address for the search bar (Area, City)
                 const addressParts = data.display_name.split(', ');
                 const area = addressParts[0] || '';
                 const city = addressParts[1] || '';
@@ -64,14 +60,12 @@ export default function Register() {
         setLoading(true);
 
         try {
-            // Validation
             if (activeTab === 'business' && !formData.latitude && !formData.longitude) {
                 throw new Error("Please select your business location on the map.");
             }
 
             let proofUrl = null;
 
-            // 1. If business, upload proof document BEFORE signUp
             if (activeTab === 'business') {
                 if (!proofFile) {
                     throw new Error("Please upload a proof document (Business License/ID).");
@@ -94,8 +88,6 @@ export default function Register() {
                 proofUrl = publicUrl;
             }
 
-            // 2. Sign up user with ALL metadata
-            // This metadata will be picked up by the DB Trigger 'handle_new_user'
             const { data, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
@@ -116,7 +108,6 @@ export default function Register() {
             if (authError) throw authError;
             if (!data.user) throw new Error("User creation failed.");
 
-            // 3. Success - The DB Trigger handles all table insertions
             await supabase.auth.signOut();
             router.push('/login?registered=true');
 
@@ -127,12 +118,8 @@ export default function Register() {
         }
     };
 
-
-
     return (
         <div className={`auth-container ${activeTab === 'business' ? 'register' : ''}`}>
-            {/* Simplified Header - Removing 'Create an Account' h2 as requested implies cleaner look, maybe just tabs take prominence */}
-
             <div className="tabs">
                 <div
                     className={`tab ${activeTab === 'user' ? 'active' : ''}`}
@@ -241,12 +228,6 @@ export default function Register() {
                     {loading ? 'Registering...' : 'Register'}
                 </button>
             </form>
-
-            {activeTab === 'user' && (
-                <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                    {/* Google Sign Up Removed */}
-                </div>
-            )}
 
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <p className="mt-2 text-center" style={{ fontSize: '0.9rem' }}>Already have an account? <Link href="/login" style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Login</Link></p>

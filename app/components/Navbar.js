@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 
 export default function Navbar() {
     const [session, setSession] = useState(null);
-    const [dashboardLink, setDashboardLink] = useState('/dashboard/user'); // Default fallback
+    const [dashboardLink, setDashboardLink] = useState('/dashboard/user');
     const router = useRouter();
     const pathname = usePathname();
     const isDashboard = pathname?.startsWith('/dashboard');
@@ -16,11 +16,9 @@ export default function Navbar() {
             const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
             if (session) {
-
                 let role = session.user.user_metadata?.role;
 
                 if (!role) {
-
                     const { data } = await supabase
                         .from('profiles')
                         .select('role')
@@ -37,7 +35,6 @@ export default function Navbar() {
                     setDashboardLink('/dashboard/user');
                 }
             } else {
-
                 if (typeof document !== 'undefined' && document.cookie.includes('parkflow_admin=')) {
                     setSession({ user: { user_metadata: { role: 'admin' } } });
                     setDashboardLink('/dashboard/admin');
@@ -55,7 +52,6 @@ export default function Navbar() {
     }, [pathname]);
 
     const handleLogout = async () => {
-
         if (typeof document !== 'undefined') {
             document.cookie = "parkflow_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
@@ -65,11 +61,10 @@ export default function Navbar() {
         router.push('/login');
     };
 
-
     return (
         <nav className="navbar">
             <div className="container">
-                {isDashboard ? ( 
+                {isDashboard ? (
                     <span className="logo" style={{ textDecoration: 'none', cursor: 'default' }}>Park<span>flow</span></span>
                 ) : (
                     <Link href="/" className="logo" style={{ textDecoration: 'none' }}>Park<span>flow</span></Link>

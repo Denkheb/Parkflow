@@ -27,7 +27,6 @@ export default function BusinessDashboard() {
     useEffect(() => {
         fetchData();
 
-        // Subscribe to real-time updates for bookings (entries/exits)
         const subscription = supabase
             .channel('bookings_realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
@@ -44,7 +43,6 @@ export default function BusinessDashboard() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        // Get Business Profile
         const { data: businessProfile } = await supabase
             .from('business_profiles')
             .select('*')
@@ -62,14 +60,12 @@ export default function BusinessDashboard() {
             });
         }
 
-        // Get parking_asset for this business
         const { data: parkingAsset } = await supabase
             .from('parking_assets')
             .select('id')
             .eq('owner_id', session.user.id)
             .single();
 
-        // Get Active Vehicles
         if (parkingAsset) {
             const { data: vehicles } = await supabase
                 .from('bookings')
@@ -88,14 +84,11 @@ export default function BusinessDashboard() {
         const entry = new Date(entryTime);
         const exit = new Date(exitTime);
 
-        // Calculate duration in hours
         const durationMs = exit - entry;
         const durationHours = durationMs / (1000 * 60 * 60);
 
-        // Base cost
         let cost = Math.ceil(durationHours) * pricePerHour;
 
-        // Add fine if exceeded max duration
         if (durationHours > maxDuration) {
             cost += fineAmount;
         }
@@ -113,7 +106,6 @@ export default function BusinessDashboard() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        // Get parking_asset ID
         const { data: parkingAsset } = await supabase
             .from('parking_assets')
             .select('id')
@@ -125,7 +117,6 @@ export default function BusinessDashboard() {
             return;
         }
 
-        // Check if vehicle already active
         const { data: existing } = await supabase
             .from('bookings')
             .select('id')
@@ -139,7 +130,6 @@ export default function BusinessDashboard() {
             return;
         }
 
-        // Insert new booking
         const { error } = await supabase
             .from('bookings')
             .insert({
@@ -183,7 +173,6 @@ export default function BusinessDashboard() {
             return;
         }
 
-        // SYNC: Update Parking Asset as well so Users see it
         const { error: syncError } = await supabase
             .from('parking_assets')
             .update({
@@ -216,7 +205,6 @@ export default function BusinessDashboard() {
     return (
         <div className="container dashboard-container">
 
-            {/* Stats Grid */}
             <div className="stats-grid">
                 <div className="stat-card">
                     <h3>{occupiedCar} / {profile?.total_slots_car || 0}</h3>
@@ -232,9 +220,7 @@ export default function BusinessDashboard() {
                 </div>
             </div>
 
-            {/* Main Grid */}
             <div className="main-grid">
-                {/* Left: Active Vehicles */}
                 <div>
                     <div className="panel">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -292,7 +278,6 @@ export default function BusinessDashboard() {
                     </div>
                 </div>
 
-                {/* Right: Entry & Settings */}
                 <div>
                     <div className="panel">
                         <h3>New Vehicle Entry</h3>

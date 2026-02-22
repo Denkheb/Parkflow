@@ -1,7 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "./components/Navbar";
 import "./styles/common.css";
-// import "./globals.css"; // Disabling default for now or merging logic
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -5,7 +5,7 @@ export const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
         cookieOptions: {
-            maxAge: 7200, // 2 hours in seconds
+            maxAge: 7200,
         }
     }
 )

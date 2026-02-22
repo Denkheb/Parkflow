@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import '../styles/auth.css';
 
-export default function Login() {
+function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const registered = searchParams.get('registered');
@@ -31,7 +31,6 @@ export default function Login() {
             return;
         }
 
-        // HARDCODED ADMIN CHECK
         if (formData.email === "admin@parkflow.com" && formData.password === "admin123") {
             document.cookie = "parkflow_admin=true; path=/";
             router.push('/dashboard/admin');
@@ -48,7 +47,6 @@ export default function Login() {
 
             if (error) throw error;
 
-            // Enforce Email Verification
             if (!data.user.email_confirmed_at) {
                 await supabase.auth.signOut();
                 setError("Please verify your email address before logging in. Check your inbox and spam folder.");
@@ -56,7 +54,6 @@ export default function Login() {
                 return;
             }
 
-            // 2. Check role and status from profile
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role, status')
@@ -73,7 +70,6 @@ export default function Login() {
             const role = profile.role;
             const status = profile.status;
 
-            // Enforce Status (Pending/Rejected/Banned)
             if (role === 'business') {
                 if (status === 'pending') {
                     await supabase.auth.signOut();
@@ -113,7 +109,6 @@ export default function Login() {
             setLoading(false);
         }
     };
-
 
     return (
         <div className="auth-container">
@@ -167,9 +162,15 @@ export default function Login() {
             </form>
 
             <p className="mt-2 text-center">Don't have an account? <Link href="/register" style={{ color: 'blue' }}>Register</Link></p>
-
-
             <p className="text-center" style={{ marginTop: '5px' }}><Link href="/" style={{ color: '#666' }}>Back to Home</Link></p>
         </div>
+    );
+}
+
+export default function Login() {
+    return (
+        <Suspense fallback={<div className="container">Loading...</div>}>
+            <LoginContent />
+        </Suspense>
     );
 }

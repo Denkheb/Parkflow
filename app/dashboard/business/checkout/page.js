@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import '../../../styles/dashboard.css';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const bookingId = searchParams.get('id');
@@ -89,10 +89,8 @@ export default function CheckoutPage() {
             })
             .eq('id', bookingId);
 
-        // Print receipt
         window.print();
 
-        // Redirect after print
         setTimeout(() => {
             router.push('/dashboard/business');
         }, 500);
@@ -268,5 +266,13 @@ export default function CheckoutPage() {
                 </div>
             </div>
         </>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div className="container">Loading...</div>}>
+            <CheckoutContent />
+        </Suspense>
     );
 }
