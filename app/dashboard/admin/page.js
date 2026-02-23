@@ -21,7 +21,10 @@ export default function AdminDashboard() {
             .from('business_profiles')
             .select(`
                 *,
-                profiles!inner (id, email, full_name, role, status)
+                profiles!inner (
+                    id, email, full_name, role, status,
+                    parking_assets (address)
+                )
             `)
             .order('created_at', { ascending: false });
 
@@ -139,6 +142,7 @@ export default function AdminDashboard() {
                                         <th style={{ padding: '12px', textAlign: 'left' }}>Owner</th>
                                         <th style={{ padding: '12px', textAlign: 'left' }}>Email</th>
                                         <th style={{ padding: '12px', textAlign: 'left' }}>License ID</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Location</th>
                                         <th style={{ padding: '12px', textAlign: 'left' }}>Proof</th>
                                         <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
                                         <th style={{ padding: '12px', textAlign: 'left' }}>Action</th>
@@ -158,6 +162,29 @@ export default function AdminDashboard() {
                                             </td>
                                             <td data-label="License" style={{ padding: '12px' }}>
                                                 {biz.license_id}
+                                            </td>
+                                            <td data-label="Location" style={{ padding: '12px' }}>
+                                                <div style={{ fontSize: '0.85rem', color: '#444', marginBottom: '4px' }}>
+                                                    {biz.profiles?.parking_assets?.[0]?.address || 'N/A'}
+                                                </div>
+                                                {biz.latitude && biz.longitude && (
+                                                    <a
+                                                        href={`https://www.google.com/maps?q=${biz.latitude},${biz.longitude}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            fontSize: '0.75rem',
+                                                            color: 'var(--primary-color)',
+                                                            textDecoration: 'none',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px'
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-map-location-dot"></i>
+                                                        View Map
+                                                    </a>
+                                                )}
                                             </td>
                                             <td data-label="Proof" style={{ padding: '12px' }}>
                                                 {biz.proof_doc_url ? (
